@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ScrapTrade - Buyer Dashboard</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            200: '#bae6fd',
+                            300: '#7dd3fc',
+                            400: '#38bdf8',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                            900: '#0c4a6e',
+                        },
+                        secondary: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            200: '#99f6e4',
+                            300: '#5eead4',
+                            400: '#2dd4bf',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                            800: '#115e59',
+                            900: '#134e4a',
+                        },
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-image: linear-gradient(120deg, #f0f9ff 0%, #e0f2fe 100%);
+        }
+        
+        .glass {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+        
+        .custom-shadow {
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+        
+        .material-card {
+            transition: all 0.3s ease;
+        }
+        
+        .material-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1);
+        }
+        
+        .scrap-icon {
+            transition: all 0.5s ease;
+        }
+        
+        .scrap-card:hover .scrap-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ripple:after {
+            content: "";
+            display: block;
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+            background-repeat: no-repeat;
+            background-position: 50%;
+            transform: scale(10, 10);
+            opacity: 0;
+            transition: transform .5s, opacity 1s;
+        }
+        
+        .ripple:active:after {
+            transform: scale(0, 0);
+            opacity: 0.3;
+            transition: 0s;
+        }
+
+        /* Toast styles */
+        #toast {
+            position: fixed;
+            bottom: 6rem;
+            right: 1.5rem;
+            background-color: #333;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transform: translateY(5rem);
+            opacity: 0;
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+        
+        #toast.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body class="min-h-screen pb-12">
+
+    <!-- Navigation Bar -->
+    <nav class="w-full glass custom-shadow py-4 px-6 fixed top-0 left-0 z-50">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gradient-to-r from-primary-600 to-secondary-500 p-2 rounded-lg text-white">
+                    <i class="fas fa-recycle text-xl"></i>
+                </div>
+                <h1 class="text-2xl font-bold bg-gradient-to-r from-primary-700 to-secondary-600 bg-clip-text text-transparent">ScrapTrade</h1>
+            </div>
+            
+            <div class="flex items-center space-x-6">
+                <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-primary-600 transition-colors duration-200">
+                    <i class="fas fa-history"></i>
+                    <span>History</span>
+                </a>
+                <a href="#" class="flex items-center space-x-2 text-gray-600 hover:text-primary-600 transition-colors duration-200">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Profile</span>
+                </a>
+                <a href="{{ url_for('logout') }}" class="px-4 py-2 orbitron rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all">
+                    LOGOUT <span class="ml-1">⏏</span>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-6xl mx-auto px-4 pt-24 pb-6">
+        <!-- Welcome Section -->
+        <div class="glass rounded-xl p-4 custom-shadow mb-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">Welcome back!</h2>
+                    <p class="text-gray-600 text-sm">Browse and purchase available scrap materials today.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <!-- Left Column: Available Scrap -->
+            <div class="lg:col-span-1">
+                <div class="glass rounded-xl p-4 custom-shadow h-full">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800">Available Scrap</h3>
+                        <span class="bg-green-100 text-green-800 text-xs font-medium px-2 py-0.5 rounded-full">Updated today</span>
+                    </div>
+                    
+                    <div class="space-y-3">
+                        <div class="bg-white rounded-lg p-3 shadow-sm material-card scrap-card">
+                            <div class="flex items-center">
+                                <div class="bg-blue-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-cog text-blue-500 scrap-icon"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-700">Steel</h4>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xl font-bold text-gray-800">98</span>
+                                        <span class="text-gray-500 text-sm">1000kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 w-full bg-gray-200 rounded-full h-1">
+                                <div class="bg-blue-500 h-1 rounded-full" style="width: 85%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-3 shadow-sm material-card scrap-card">
+                            <div class="flex items-center">
+                                <div class="bg-gray-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-cube text-gray-500 scrap-icon"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-700">Aluminium</h4>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xl font-bold text-gray-800">240</span>
+                                        <span class="text-gray-500 text-sm">1000 kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 w-full bg-gray-200 rounded-full h-1">
+                                <div class="bg-gray-500 h-1 rounded-full" style="width: 62%"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="bg-white rounded-lg p-3 shadow-sm material-card scrap-card">
+                            <div class="flex items-center">
+                                <div class="bg-amber-100 p-2 rounded-lg mr-3">
+                                    <i class="fas fa-bolt text-amber-500 scrap-icon"></i>
+                                </div>
+                                <div>
+                                    <h4 class="font-medium text-gray-700">Copper</h4>
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-xl font-bold text-gray-800">110</span>
+                                        <span class="text-gray-500 text-sm">100 kg</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-2 w-full bg-gray-200 rounded-full h-1">
+                                <div class="bg-amber-500 h-1 rounded-full" style="width: 34%"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right Column: Add to Cart + Cart -->
+            <div class="lg:col-span-2 space-y-4">
+                <!-- Add to Cart Section -->
+                <div class="glass rounded-xl p-4 custom-shadow">
+                    <h3 class="text-lg font-semibold text-gray-800 flex items-center mb-4">
+                        <i class="fas fa-cart-plus mr-2 text-primary-500"></i>
+                        Add to Cart
+                    </h3>
+                    
+                    <form id="addToCartForm" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Select Scrap Type</label>
+                                <div class="relative">
+                                    <select id="scrapType" class="w-full p-2 pr-8 border-0 bg-white rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:outline-none appearance-none text-sm">
+                                        <option value="steel">Steel (₹12 per kg)</option>
+                                        <option value="aluminium">Aluminium (₹10 per kg)</option>
+                                        <option value="copper">Copper (₹8 per kg)</option>
+                                    </select>
+                                    <div class="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none text-gray-500">
+                                        <i class="fas fa-chevron-down text-sm"></i>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Enter Weight (kg)</label>
+                                <div class="relative">
+                                    <input type="number" id="scrapWeight" min="1" placeholder="Enter weight" class="w-full p-2 pl-8 border-0 bg-white rounded-lg shadow-sm focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm">
+                                    <div class="absolute inset-y-0 left-0 flex items-center px-2 pointer-events-none text-gray-500">
+                                        <i class="fas fa-weight-hanging text-sm"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" onclick="addToCart()" class="ripple w-full py-2 bg-gradient-to-r from-primary-600 to-secondary-500 hover:from-primary-700 hover:to-secondary-600 text-white font-medium rounded-lg shadow-sm flex items-center justify-center transition-all duration-300 text-sm">
+                            <i class="fas fa-cart-plus mr-2"></i>
+                            Add to Cart
+                            <span class="ml-1" id="pricePreview"></span>
+                        </button>
+                    </form>
+                </div>
+                
+                <!-- Cart Section -->
+                <div class="glass rounded-xl p-4 custom-shadow">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-800 flex items-center">
+                            <i class="fas fa-shopping-cart mr-2 text-primary-500"></i>
+                            Your Cart
+                        </h3>
+                        <button id="clearCartBtn" onclick="clearCart()" class="text-sm text-red-500 hover:text-red-700 hidden">
+                            <i class="fas fa-trash mr-1"></i> Clear All
+                        </button>
+                    </div>
+                    
+                    <div id="emptyCartMessage" class="py-4 text-center text-gray-500">
+                        <i class="fas fa-shopping-cart text-3xl mb-2 opacity-30"></i>
+                        <p class="text-sm">Your cart is empty. Add some items!</p>
+                    </div>
+                    
+                    <div id="cartContent" class="hidden">
+                        <ul id="cartItems" class="space-y-2 max-h-48 overflow-y-auto pr-2"></ul>
+                        
+                        <div class="mt-4 pt-3 border-t border-gray-200">
+                            <div class="flex justify-between items-center text-gray-800 text-sm">
+                                <span class="font-medium">Subtotal:</span>
+                                <span>₹<span id="subtotalPrice">0</span></span>
+                            </div>
+                            <div class="flex justify-between items-center text-gray-800 text-sm mt-1">
+                                <span class="font-medium">Tax (5%):</span>
+                                <span>₹<span id="taxAmount">0</span></span>
+                            </div>
+                            <div class="flex justify-between items-center text-gray-800 font-bold text-base mt-2">
+                                <span>Total:</span>
+                                <span>₹<span id="totalPrice">0</span></span>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-4">
+                            <button id="paymentBtn" onclick="proceedToPayment()" class="ripple w-full py-2 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-medium rounded-lg shadow-sm flex items-center justify-center transition-all duration-300 text-sm">
+                                <i class="fas fa-credit-card mr-2"></i>
+                                Proceed to Payment
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Toast Notification -->
+    <div id="toast"></div>
+
+    <!-- Payment Success Modal -->
+    <div id="successModal" class="fixed inset-0 flex items-center justify-center z-50 hidden">
+        <div class="fixed inset-0 bg-black opacity-30"></div>
+        <div class="glass rounded-2xl p-8 custom-shadow w-full max-w-md mx-auto relative z-10">
+            <div class="text-center">
+                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-green-100 rounded-full mb-4">
+                    <i class="fas fa-check-circle text-3xl text-green-500"></i>
+                </div>
+                <h3 class="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h3>
+                <p class="text-gray-600 mb-6">Your order has been placed successfully. You will receive an email confirmation shortly.</p>
+                <div class="bg-gray-50 p-4 rounded-lg text-left mb-6">
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Order ID:</span>
+                        <span class="text-gray-800 font-medium" id="orderIdDisplay"></span>
+                    </div>
+                    <div class="flex justify-between mb-2">
+                        <span class="text-gray-600">Payment ID:</span>
+                        <span class="text-gray-800 font-medium" id="paymentIdDisplay"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Amount Paid:</span>
+                        <span class="text-gray-800 font-medium">₹<span id="amountPaidDisplay"></span></span>
+                    </div>
+                </div>
+                <button onclick="closeSuccessModal()" class="w-full py-3 rounded-xl bg-primary-600 text-white font-medium hover:bg-primary-700 transition-colors">
+                    Continue Shopping
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        const TAX_RATE = 0.05;
+        
+        // Cost per kg for different materials
+        const costPerKg = {
+            "steel": 12,
+            "aluminium": 10,
+            "copper": 8
+        };
+
+        // Update price preview as user types weight
+        document.getElementById('scrapWeight').addEventListener('input', function() {
+            const scrapType = document.getElementById('scrapType').value;
+            const weight = parseFloat(this.value) || 0;
+            const price = weight * costPerKg[scrapType];
+            
+            if (weight > 0) {
+                document.getElementById('pricePreview').innerText = ` - ₹${price}`;
+            } else {
+                document.getElementById('pricePreview').innerText = '';
+            }
+        });
+
+        // Add to cart function
+        function addToCart() {
+            const scrapType = document.getElementById('scrapType').value;
+            const scrapName = document.getElementById('scrapType').options[document.getElementById('scrapType').selectedIndex].text.split(' ')[0];
+            const weight = parseFloat(document.getElementById('scrapWeight').value);
+            
+            if (!weight || weight <= 0) {
+                alert('Please enter a valid weight');
+                return;
+            }
+            
+            const price = weight * costPerKg[scrapType];
+            
+            // Add to cart array
+            cart.push({
+                id: Date.now(), // Unique ID for cart item
+                type: scrapType,
+                name: scrapName,
+                weight: weight,
+                price: price
+            });
+            
+            // Update UI
+            updateCartUI();
+            
+            // Reset form
+            document.getElementById('scrapWeight').value = '';
+            document.getElementById('pricePreview').innerText = '';
+            
+            // Show success message
+            showToast(`Added ${weight}kg of ${scrapName} to cart`);
+        }
+
+        // Update cart UI
+        function updateCartUI() {
+            const emptyCartMessage = document.getElementById('emptyCartMessage');
+            const cartContent = document.getElementById('cartContent');
+            const cartItems = document.getElementById('cartItems');
+            const clearCartBtn = document.getElementById('clearCartBtn');
+            
+            if (cart.length === 0) {
+                emptyCartMessage.classList.remove('hidden');
+                cartContent.classList.add('hidden');
+                clearCartBtn.classList.add('hidden');
+                return;
+            }
+            
+            // Show cart content, hide empty message
+            emptyCartMessage.classList.add('hidden');
+            cartContent.classList.remove('hidden');
+            clearCartBtn.classList.remove('hidden');
+            
+            // Clear current items
+            cartItems.innerHTML = '';
+            
+            // Add cart items
+            let subtotal = 0;
+            
+            cart.forEach(item => {
+                const cartItem = document.createElement('li');
+                cartItem.className = 'bg-white rounded-lg p-3 shadow-sm flex justify-between items-center';
+                cartItem.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="bg-gray-100 p-2 rounded-lg mr-3">
+                            <i class="fas fa-${getIconForMaterial(item.type)} text-gray-600"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-medium text-gray-800">${item.name}</h4>
+                            <p class="text-sm text-gray-500">${item.weight}kg × ₹${costPerKg[item.type]}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-medium mr-4">₹${item.price}</span>
+                        <button onclick="removeFromCart(${item.id})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                cartItems.appendChild(cartItem);
+                subtotal += item.price;
+            });
+            
+            // Update price
+            const tax = subtotal * TAX_RATE;
+            const total = subtotal + tax;
+            
+            document.getElementById('subtotalPrice').innerText = subtotal.toFixed(2);
+            document.getElementById('taxAmount').innerText = tax.toFixed(2);
+            document.getElementById('totalPrice').innerText = total.toFixed(2);
+        }
+
+        // Get icon for material type
+        function getIconForMaterial(type) {
+            switch (type) {
+                case 'steel':
+                    return 'cog';
+                case 'aluminium':
+                    return 'cube';
+                case 'copper':
+                    return 'bolt';
+                default:
+                    return 'recycle';
+            }
+        }
+
+        // Remove item from cart
+        function removeFromCart(id) {
+            cart = cart.filter(item => item.id !== id);
+            updateCartUI();
+            showToast('Item removed from cart');
+        }
+
+        // Clear cart
+        function clearCart() {
+            cart = [];
+            updateCartUI();
+            showToast('Cart cleared');
+        }
+
+        // Toast notification
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Generate order summary for receipt
+        function generateOrderSummary() {
+            let summary = '';
+            cart.forEach(item => {
+                summary += `${item.name} (${item.weight}kg), `;
+            });
+            return summary.slice(0, -2); // Remove trailing comma and space
+        }
+
+        // Process Payment with Razorpay
+        function proceedToPayment() {
+            if (cart.length === 0) {
+                showToast('Your cart is empty!');
+                return;
+            }
+            
+            // Calculate total
+            let subtotal = 0;
+            cart.forEach(item => {
+                subtotal += item.price;
+            });
+            
+            const tax = subtotal * TAX_RATE;
+            const total = subtotal + tax;
+            
+            // Store total amount for later use
+            window.paymentTotal = total;
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('amount', total * 100); // Convert to paise for Razorpay
+            
+            // Send request to backend to create order
+            fetch('/create_order', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.error) {
+                    showToast(data.error);
+                    return;
+                }
+                
+                // Razorpay options
+                const options = {
+                    key: "rzp_test_h2s4PxBwrmOiSL",
+                    amount: data.amount,
+                    currency: "INR",
+                    name: "ScrapTrade",
+                    description: "Purchase of Scrap Materials",
+                    order_id: data.order_id,
+                    handler: function (response) {
+                        // Verify payment on backend
+                        verifyPayment(response, total);
+                    },
+                    prefill: {
+                        name: "Customer Name",
+                        email: "customer@example.com",
+                        contact: "9999999999"
+                    },
+                    notes: {
+                        address: "ScrapTrade Office",
+                        order_items: generateOrderSummary()
+                    },
+                    theme: {
+                        color: "#0ea5e9"
+                    }
+                };
+                
+                const razorpayInstance = new Razorpay(options);
+                razorpayInstance.on('payment.failed', function (response) {
+                    showToast('Payment failed. Please try again.');
+                    console.error('Payment failed:', response.error);
+                });
+                razorpayInstance.open();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Unable to initialize payment. Please try again later.');
+            });
+        }
+        
+        // Verify payment on backend
+        function verifyPayment(response, total) {
+            const formData = new FormData();
+            formData.append('razorpay_payment_id', response.razorpay_payment_id);
+            formData.append('razorpay_order_id', response.razorpay_order_id);
+            formData.append('razorpay_signature', response.razorpay_signature);
+            
+            fetch('/payment_success', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.text())
+            .then(result => {
+                if (result.includes('success')) {
+                    // Update success modal with payment details
+                    document.getElementById('orderIdDisplay').innerText = response.razorpay_order_id;
+                    document.getElementById('paymentIdDisplay').innerText = response.razorpay_payment_id;
+                    document.getElementById('amountPaidDisplay').innerText = total.toFixed(2);
+                    
+                    // Show success modal
+                    document.getElementById('successModal').classList.remove('hidden');
+                    
+                    // Clear cart
+                    cart = [];
+                    updateCartUI();
+                    
+                    showToast('Payment successful!');
+                } else {
+                    showToast('Payment verification failed. Please contact support.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showToast('Payment verification failed. Please try again.');
+            });
+        }
+        
+        // Close success modal
+        function closeSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+        }
+
+        // Initialize
+        updateCartUI();
+
+        // Event listeners for price calculation as type changes
+        document.getElementById('scrapType').addEventListener('change', function() {
+            const weight = parseFloat(document.getElementById('scrapWeight').value) || 0;
+            if (weight > 0) {
+                const scrapType = this.value;
+                const price = weight * costPerKg[scrapType];
+                document.getElementById('pricePreview').innerText = ` - ₹${price}`;
+            }
+        });
+    </script>
+</body>
+</html>

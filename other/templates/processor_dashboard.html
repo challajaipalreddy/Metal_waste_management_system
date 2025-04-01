@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrap Processor Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.0.0/swiper-bundle.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
+        
+        * {
+            font-family: 'Montserrat', sans-serif;
+        }
+        
+        .orbitron {
+            font-family: 'Orbitron', sans-serif;
+        }
+        
+        body {
+            margin: 0;
+            overflow-x: hidden;
+            background: #e6f2e6;  /* Light green background */
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4d8b4d;
+            border-radius: 6px;
+        }
+
+        /* Input effects */
+        .cyber-input {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            transition: all 0.3s ease;
+        }
+
+        .cyber-input:focus {
+            border-color: #388e3c;
+            box-shadow: 0 0 5px rgba(56, 142, 60, 0.5);
+        }
+
+        /* Hover effects */
+        .hover-scale {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .hover-scale:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #c3e6cb;
+            margin-top: 15px;
+            text-align: center;
+            animation: fadeIn 0.5s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        #totalCounter {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #2e7d32;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="bg-green-700 text-white shadow-md fixed top-0 left-0 right-0 z-50 py-3 px-6">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <h1 class="orbitron text-2xl font-bold text-white">
+                    ♻️ SCRAP PROCESSOR
+                </h1>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <a href="{{ url_for('logout') }}" class="px-4 py-2 orbitron rounded-lg bg-red-600 text-white hover:bg-red-700 transition-all">
+                    LOGOUT <span class="ml-1">⏏</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-10 px-4 min-h-screen">
+        <div class="max-w-6xl w-full mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left Column: Stats & Metrics -->
+            <div class="lg:col-span-1 space-y-6">
+                <!-- Total Scrap Counter Card -->
+                <div class="bg-white rounded-lg shadow-md p-6 hover-scale">
+                    <h3 class="orbitron text-xl text-green-700 mb-4 flex items-center justify-center">
+                        <span class="mr-2">📊</span> TOTAL PROCESSED SCRAP
+                    </h3>
+                    
+                    <div id="totalCounter" class="py-6">{{ total_weight }} KG</div>
+                    
+                    <div class="mt-4 text-center text-sm text-gray-600">
+                        Last updated: <span id="lastUpdateTime">{{ last_update_time|default('Now') }}</span>
+                    </div>
+                </div>
+                
+                <!-- Recent Activity Card -->
+                <div class="bg-white rounded-lg shadow-md p-6 hover-scale">
+                    <h3 class="orbitron text-xl text-green-700 mb-4 flex items-center">
+                        <span class="mr-2">🔄</span> RECENT ACTIVITY
+                    </h3>
+                    
+                    <div class="space-y-3" id="recentActivityList">
+                        <!-- Will be populated dynamically -->
+                        <div class="p-3 bg-gray-100 rounded-lg flex justify-between">
+                            <span class="text-gray-800">Processed Steel</span>
+                            <span class="font-bold text-green-700">0 KG</span>
+                        </div>
+                        <div class="p-3 bg-gray-100 rounded-lg flex justify-between">
+                            <span class="text-gray-800">Processed Aluminum</span>
+                            <span class="font-bold text-green-700">0 KG</span>
+                        </div>
+                        <div class="p-3 bg-gray-100 rounded-lg flex justify-between">
+                            <span class="text-gray-800">Processed Copper</span>
+                            <span class="font-bold text-green-700">0 KG</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Center & Right Columns: Main Content Area -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- Approved Scrap Details Table -->
+                <div class="bg-white rounded-lg shadow-md p-6 hover-scale">
+                    <h3 class="orbitron text-xl text-green-700 mb-4 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <span class="mr-2">📜</span> APPROVED SCRAP DETAILS
+                        </div>
+                        <button id="refreshButton" class="text-xs bg-green-100 px-3 py-1 rounded-full hover:bg-green-200 text-green-700 transition-all">
+                            REFRESH DATA
+                        </button>
+                    </h3>
+                    
+                    <div class="overflow-x-auto">
+                        <table class="w-full border-collapse rounded-lg text-left">
+                            <thead>
+                                <tr class="border-b border-gray-300">
+                                    <th class="p-3 text-gray-700 font-medium">NAME</th>
+                                    <th class="p-3 text-gray-700 font-medium">TYPE</th>
+                                    <th class="p-3 text-gray-700 font-medium">WEIGHT (KG)</th>
+                                    <th class="p-3 text-gray-700 font-medium">STATUS</th>
+                                </tr>
+                            </thead>
+                            <tbody id="scrapTableBody">
+                                {% for scrap in scraps %}
+                                <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
+                                    <td class="p-3 text-gray-800">{{ scrap.name }}</td>
+                                    <td class="p-3 text-gray-800">{{ scrap.type }}</td>
+                                    <td class="p-3 text-gray-800">{{ scrap.weight }}</td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                <!-- Example rows if no data -->
+                                <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
+                                    <td class="p-3 text-gray-800">Steel Beams</td>
+                                    <td class="p-3 text-gray-800">Construction</td>
+                                    <td class="p-3 text-gray-800">178.5</td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
+                                    <td class="p-3 text-gray-800">Copper Wiring</td>
+                                    <td class="p-3 text-gray-800">Electronics</td>
+                                    <td class="p-3 text-gray-800">42.3</td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
+                                    </td>
+                                </tr>
+                                <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
+                                    <td class="p-3 text-gray-800">Aluminum Sheets</td>
+                                    <td class="p-3 text-gray-800">Manufacturing</td>
+                                    <td class="p-3 text-gray-800">95.7</td>
+                                    <td class="p-3">
+                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Scrap Processing Form -->
+                <div class="bg-white rounded-lg shadow-md p-6 hover-scale">
+                    <h3 class="orbitron text-xl text-green-700 mb-4 flex items-center">
+                        <span class="mr-2">⚙️</span> PROCESS SCRAP
+                    </h3>
+                    
+                    <form id="scrapForm" method="POST" class="space-y-5">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">STEEL WEIGHT (KG)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">⚙️</span>
+                                    <input type="number" name="steel" id="steelInput" placeholder="0.00" required
+                                        class="cyber-input w-full px-10 py-3 rounded-lg text-gray-800 focus:outline-none">
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">kg</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">ALUMINIUM WEIGHT (KG)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">⚙️</span>
+                                    <input type="number" name="aluminium" id="aluminiumInput" placeholder="0.00" required
+                                        class="cyber-input w-full px-10 py-3 rounded-lg text-gray-800 focus:outline-none">
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">kg</span>
+                                </div>
+                            </div>
+                            
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-gray-700">COPPER WEIGHT (KG)</label>
+                                <div class="relative">
+                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">⚙️</span>
+                                    <input type="number" name="copper" id="copperInput" placeholder="0.00" required
+                                        class="cyber-input w-full px-10 py-3 rounded-lg text-gray-800 focus:outline-none">
+                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">kg</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Success Message (initially hidden) -->
+                        <div id="successMessage" class="success-message">
+                            <div class="flex items-center justify-center">
+                                <span class="text-green-700 mr-2">✅</span>
+                                <span>Processing completed! <strong id="processedAmount">0</strong> KG of scrap added to the total.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="pt-4">
+                            <button type="submit" id="submitButton"
+                                class="w-full py-4 rounded-lg bg-green-600 text-white font-bold orbitron tracking-wider hover:bg-green-700 transition-colors">
+                                <span class="mr-2">✅</span> SUBMIT PROCESSING REQUEST
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- Footer -->
+    <footer class="bg-green-700 text-white shadow-md py-4 px-6 text-center">
+        <p class="text-white text-sm">© 2025 Scrap Processor System • All Rights Reserved</p>
+    </footer>
+
+    <!-- Scripts -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Simple animation for cards
+            const cards = document.querySelectorAll('.hover-scale');
+            cards.forEach(card => {
+                card.addEventListener('mouseenter', () => {
+                    card.style.transform = 'translateY(-5px) scale(1.02)';
+                    card.style.boxShadow = '0 10px 15px rgba(0, 0, 0, 0.1)';
+                });
+                
+                card.addEventListener('mouseleave', () => {
+                    card.style.transform = 'translateY(0) scale(1)';
+                    card.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
+                });
+            });
+            
+            // Get the form and add submit event
+            const form = document.getElementById('scrapForm');
+            const successMessage = document.getElementById('successMessage');
+            const processedAmount = document.getElementById('processedAmount');
+            const totalCounter = document.getElementById('totalCounter');
+            const lastUpdateTime = document.getElementById('lastUpdateTime');
+            const recentActivityList = document.getElementById('recentActivityList');
+            
+            // Initial total (would be passed from the backend in a real app)
+            let totalWeight = parseFloat(totalCounter.innerText) || 0;
+            
+            form.addEventListener('submit', function(e) {
+                e.preventDefault(); // Prevent actual form submission for demo
+                
+                // Get values from inputs
+                const steelWeight = parseFloat(document.getElementById('steelInput').value) || 0;
+                const aluminiumWeight = parseFloat(document.getElementById('aluminiumInput').value) || 0;
+                const copperWeight = parseFloat(document.getElementById('copperInput').value) || 0;
+                
+                // Calculate total new weight
+                const newWeight = steelWeight + aluminiumWeight + copperWeight;
+                
+                // Update the total
+                totalWeight += newWeight;
+                totalCounter.innerText = totalWeight.toFixed(1) + ' KG';
+                
+                // Update the success message
+                processedAmount.innerText = newWeight.toFixed(1);
+                successMessage.style.display = 'block';
+                
+                // Update last update time
+                const now = new Date();
+                lastUpdateTime.innerText = now.toLocaleTimeString();
+                
+                // Add to recent activity
+                updateRecentActivity(steelWeight, aluminiumWeight, copperWeight);
+                
+                // Add new row to the table
+                addRowToTable(steelWeight, aluminiumWeight, copperWeight);
+                
+                // Reset form
+                form.reset();
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    successMessage.style.display = 'none';
+                }, 5000);
+            });
+            
+            function updateRecentActivity(steel, aluminium, copper) {
+                // Create new activity entries
+                if (steel > 0) {
+                    const steelActivity = document.createElement('div');
+                    steelActivity.className = 'p-3 bg-gray-100 rounded-lg flex justify-between';
+                    steelActivity.innerHTML = `
+                        <span class="text-gray-800">Processed Steel</span>
+                        <span class="font-bold text-green-700">${steel.toFixed(1)} KG</span>
+                    `;
+                    recentActivityList.prepend(steelActivity);
+                }
+                
+                if (aluminium > 0) {
+                    const aluminiumActivity = document.createElement('div');
+                    aluminiumActivity.className = 'p-3 bg-gray-100 rounded-lg flex justify-between';
+                    aluminiumActivity.innerHTML = `
+                        <span class="text-gray-800">Processed Aluminum</span>
+                        <span class="font-bold text-green-700">${aluminium.toFixed(1)} KG</span>
+                    `;
+                    recentActivityList.prepend(aluminiumActivity);
+                }
+                
+                if (copper > 0) {
+                    const copperActivity = document.createElement('div');
+                    copperActivity.className = 'p-3 bg-gray-100 rounded-lg flex justify-between';
+                    copperActivity.innerHTML = `
+                        <span class="text-gray-800">Processed Copper</span>
+                        <span class="font-bold text-green-700">${copper.toFixed(1)} KG</span>
+                    `;
+                    recentActivityList.prepend(copperActivity);
+                }
+                
+                // Limit to last 5 activities
+                const activities = recentActivityList.children;
+                while (activities.length > 5) {
+                    recentActivityList.removeChild(activities[activities.length - 1]);
+                }
+            }
+            
+            function addRowToTable(steel, aluminium, copper) {
+                if (steel + aluminium + copper <= 0) return;
+                
+                const tableBody = document.getElementById('scrapTableBody');
+                const newRow = document.createElement('tr');
+                newRow.className = 'border-b border-gray-200 hover:bg-gray-100 transition-all';
+                
+                // Determine which material has the highest weight for the row name
+                let name, type;
+                if (steel >= aluminium && steel >= copper) {
+                    name = "Steel Components";
+                    type = "Manufacturing";
+                } else if (aluminium >= steel && aluminium >= copper) {
+                    name = "Aluminum Parts";
+                    type = "Industrial";
+                } else {
+                    name = "Copper Materials";
+                    type = "Electronics";
+                }
+                
+                const totalRowWeight = steel + aluminium + copper;
+                
+                newRow.innerHTML = `
+                    <td class="p-3 text-gray-800">${name}</td>
+                    <td class="p-3 text-gray-800">${type}</td>
+                    <td class="p-3 text-gray-800">${totalRowWeight.toFixed(1)}</td>
+                    <td class="p-3">
+                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
+                    </td>
+                `;
+                
+                // Add to the top of the table
+                if (tableBody.firstChild) {
+                    tableBody.insertBefore(newRow, tableBody.firstChild);
+                } else {
+                    tableBody.appendChild(newRow);
+                }
+            }
+            
+            // Refresh button functionality
+            document.getElementById('refreshButton').addEventListener('click', function() {
+                this.classList.add('animate-spin');
+                setTimeout(() => {
+                    this.classList.remove('animate-spin');
+                }, 500);
+            });
+        });
+    </script>
+</body>
+</html>

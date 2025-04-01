@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Payment Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 50px;
+        }
+
+        h2 {
+            color: #333;
+        }
+
+        .payment-container {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+        }
+
+        .btn {
+            background-color: #528FF0;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+
+        .btn:hover {
+            background-color: #4175d4;
+        }
+    </style>
+</head>
+<body>
+    <div class="payment-container">
+        <h2>Proceed to Payment</h2>
+        <p>Total Amount: ₹<span id="totalAmount"></span></p>
+
+        <form id="razorpayForm" action="/payment_success" method="POST" onsubmit="return openRazorpay(event);">
+            <input type="hidden" name="hidden" value="Hidden Element">
+        </form>
+
+        <p><a href="{{ url_for('buyer_dashboard') }}" class="btn">Cancel</a></p>
+    </div>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+        // Assuming you have the total amount available in a variable
+        const totalAmount = {{ amount }}; // This should be passed from your backend
+        document.getElementById('totalAmount').innerText = (totalAmount / 100).toFixed(2); // Display amount in INR
+
+        function openRazorpay(event) {
+            event.preventDefault(); // Prevent the default form submission
+
+            const options = {
+                key: "rzp_test_h2s4PxBwrmOiSL", // Your Razorpay key
+                amount: totalAmount, // Amount in paise
+                currency: "INR",
+                name: "Metal Waste Management",
+                description: "Scrap Purchase",
+                image: "https://your-logo-url.com/logo.png",
+                handler: function (response) {
+                    // Handle successful payment here
+                    console.log(response);
+                    // You can redirect to a success page or update your backend
+                    document.getElementById('razorpayForm').submit(); // Submit the form to your server
+                },
+                prefill: {
+                    name: "Buyer Name",
+                    email: "buyer@example.com",
+                    contact: "9999999999"
+                },
+                theme: {
+                    color: "#528FF0"
+                }
+            };
+
+            const razorpay = new Razorpay(options);
+            razorpay.open(); // Open the Razorpay payment modal
+        }
+    </script>
+</body>
+</html>

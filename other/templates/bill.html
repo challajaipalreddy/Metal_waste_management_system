@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scrap Purchase Bill</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Generate a random bill number
+        function generateBillNumber() {
+            return 'BILL-' + Math.floor(100000 + Math.random() * 900000);
+        }
+
+        // Get current date
+        function getCurrentDate() {
+            const today = new Date();
+            return today.toLocaleDateString();
+        }
+
+        // Set bill number and date
+        window.onload = function () {
+            document.getElementById("billNo").innerText = generateBillNumber();
+            document.getElementById("billDate").innerText = getCurrentDate();
+        };
+    </script>
+</head>
+<body class="bg-gray-100 flex justify-center items-center min-h-screen">
+    <div class="bg-white shadow-lg rounded-lg p-6 w-full max-w-md text-center border border-gray-300">
+        <h2 class="text-2xl font-bold mb-2 text-gray-800">🧾 Scrap Purchase Bill</h2>
+        <p class="text-sm text-gray-600">Bill No: <span id="billNo" class="font-semibold"></span></p>
+        <p class="text-sm text-gray-600 mb-4">Date: <span id="billDate" class="font-semibold"></span></p>
+
+        <div class="border-t border-gray-300 my-4"></div>
+
+        <!-- Loop through each item in the cart -->
+        {% for item in cart_items %}
+            <p class="text-lg font-semibold">Scrap Type: <span class="font-normal">{{ item.type }}</span></p>
+            <p class="text-lg font-semibold">Weight: <span class="font-normal">{{ item.weight }} kg</span></p>
+            <p class="text-lg font-semibold">Rate per kg: <span class="font-normal">₹{{ item.price / item.weight }}</span></p>
+            <p class="text-lg font-semibold text-green-600">Total Price: <span class="font-bold">₹{{ item.price }}</span></p>
+            <div class="border-t border-gray-300 my-4"></div>
+        {% endfor %}
+
+        <p class="text-lg font-semibold">Grand Total: <span class="font-bold">₹{{ grand_total }}</span></p>
+
+        <div class="border-t border-gray-300 my-4"></div>
+
+        <button onclick="window.print()" class="bg-green-500 text-white px-6 py-2 rounded-lg mt-4 hover:bg-green-600 transition-all">
+            🖨️ Print Bill
+        </button>
+    </div>
+</body>
+</html>
