@@ -6,6 +6,7 @@
     <title>Scrap Processor Dashboard</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/9.0.0/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&family=Montserrat:wght@300;400;500;600;700&display=swap');
         
@@ -83,6 +84,223 @@
             color: #2e7d32;
             text-align: center;
         }
+        
+        /* Popup styles */
+        .popup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .popup-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .popup-content {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        }
+        
+        .popup-overlay.active .popup-content {
+            transform: scale(1);
+        }
+        
+        .popup-icon {
+            font-size: 3rem;
+            color: #10b981;
+            margin-bottom: 1rem;
+        }
+        
+        .popup-title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #10b981;
+            margin-bottom: 0.5rem;
+        }
+        
+        .popup-message {
+            color: #4b5563;
+            margin-bottom: 1.5rem;
+        }
+        
+        .popup-button {
+            background-color: #10b981;
+            color: white;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.25rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .popup-button:hover {
+            background-color: #059669;
+        }
+
+        /* Floating CTA Styles */
+        .floating-cta {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            z-index: 999;
+        }
+        
+        .floating-btn {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #10b981;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+            cursor: pointer;
+        }
+        
+        .floating-btn i {
+            font-size: 18px;
+        }
+        
+        .floating-btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.4);
+            background: #059669;
+        }
+        
+        .floating-btn span {
+            display: inline-block;
+        }
+        
+        /* Help Dropdown Styles */
+        .help-dropdown {
+            position: absolute;
+            bottom: 100%;
+            right: 0;
+            width: 220px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 25px rgba(0, 0, 0, 0.15);
+            padding: 10px;
+            margin-bottom: 15px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            z-index: -1;
+        }
+        
+        .help-dropdown.active {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+            z-index: 1000;
+        }
+        
+        .help-option {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s ease;
+        }
+        
+        .help-option:hover {
+            background: rgba(16, 185, 129, 0.1);
+        }
+        
+        .help-option i {
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-radius: 50%;
+            font-size: 12px;
+        }
+        
+        .help-option span {
+            font-size: 14px;
+            font-weight: 500;
+            color: #1e293b;
+        }
+        
+        .help-link {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        .help-dropdown::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            right: 20px;
+            width: 16px;
+            height: 16px;
+            background: white;
+            transform: rotate(45deg);
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        @media (max-width: 768px) {
+            .floating-cta {
+                bottom: 20px;
+                right: 20px;
+            }
+            
+            .floating-btn {
+                padding: 10px 15px;
+            }
+            
+            .floating-btn span {
+                display: none;
+            }
+            
+            .floating-btn i {
+                font-size: 20px;
+            }
+            
+            .help-dropdown {
+                width: 180px;
+                right: -10px;
+            }
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 0.3; }
+            100% { opacity: 0.6; }
+        }
     </style>
 </head>
 <body>
@@ -124,24 +342,55 @@
                 
                 <!-- Recent Activity Card -->
                 <div class="bg-white rounded-lg shadow-md p-6 hover-scale">
-                    <h3 class="orbitron text-xl text-green-700 mb-4 flex items-center">
+                    <h3 class="orbitron text-xl text-green-700 mb-4 flex items-center justify-between">
+                        <div class="flex items-center">
                         <span class="mr-2">🔄</span> RECENT ACTIVITY
+                        </div>
+                        <span class="text-xs bg-green-100 px-2 py-1 rounded-full text-green-700">
+                            Last 5 entries
+                        </span>
                     </h3>
                     
                     <div class="space-y-3" id="recentActivityList">
-                        <!-- Will be populated dynamically -->
-                        <div class="p-3 bg-gray-100 rounded-lg flex justify-between">
-                            <span class="text-gray-800">Processed Steel</span>
-                            <span class="font-bold text-green-700">0 KG</span>
+                        {% if recent_activity %}
+                            {% for activity in recent_activity %}
+                            <div class="p-4 bg-gray-50 rounded-lg border border-gray-200 hover:border-green-300 transition-all">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium text-gray-600">
+                                        <i class="fas fa-calendar-alt mr-1"></i> {{ activity.date }}
+                                    </span>
+                                    <span class="text-xs px-2 py-1 rounded-full bg-green-100 text-green-700">
+                                        {{ activity.status|default('completed') }}
+                                    </span>
+                                </div>
+                                <div class="grid grid-cols-3 gap-2">
+                                    <div class="text-center p-2 bg-gray-100 rounded">
+                                        <div class="text-xs text-gray-500">Steel</div>
+                                        <div class="font-bold text-green-700">{{ activity.steel }} kg</div>
+                                    </div>
+                                    <div class="text-center p-2 bg-gray-100 rounded">
+                                        <div class="text-xs text-gray-500">Aluminium</div>
+                                        <div class="font-bold text-green-700">{{ activity.aluminium }} kg</div>
+                                    </div>
+                                    <div class="text-center p-2 bg-gray-100 rounded">
+                                        <div class="text-xs text-gray-500">Copper</div>
+                                        <div class="font-bold text-green-700">{{ activity.copper }} kg</div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 text-xs text-gray-500 text-right">
+                                    <i class="fas fa-user mr-1"></i> {{ activity.processor_name|default('Processor') }}
+                                </div>
                         </div>
-                        <div class="p-3 bg-gray-100 rounded-lg flex justify-between">
-                            <span class="text-gray-800">Processed Aluminum</span>
-                            <span class="font-bold text-green-700">0 KG</span>
+                            {% endfor %}
+                        {% else %}
+                            <div class="p-6 bg-gray-50 rounded-lg border border-gray-200 text-center">
+                                <div class="text-gray-400 mb-2">
+                                    <i class="fas fa-history text-3xl"></i>
                         </div>
-                        <div class="p-3 bg-gray-100 rounded-lg flex justify-between">
-                            <span class="text-gray-800">Processed Copper</span>
-                            <span class="font-bold text-green-700">0 KG</span>
+                                <p class="text-gray-500">No recent activity</p>
+                                <p class="text-xs text-gray-400 mt-1">Processed scrap will appear here</p>
                         </div>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -170,41 +419,24 @@
                                 </tr>
                             </thead>
                             <tbody id="scrapTableBody">
+                                {% if scraps %}
                                 {% for scrap in scraps %}
                                 <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
                                     <td class="p-3 text-gray-800">{{ scrap.name }}</td>
-                                    <td class="p-3 text-gray-800">{{ scrap.type }}</td>
+                                        <td class="p-3 text-gray-800">{{ scrap.condition }}</td>
                                     <td class="p-3 text-gray-800">{{ scrap.weight }}</td>
                                     <td class="p-3">
                                         <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
                                     </td>
                                 </tr>
                                 {% endfor %}
-                                <!-- Example rows if no data -->
-                                <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
-                                    <td class="p-3 text-gray-800">Steel Beams</td>
-                                    <td class="p-3 text-gray-800">Construction</td>
-                                    <td class="p-3 text-gray-800">178.5</td>
-                                    <td class="p-3">
-                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
+                                {% else %}
+                                    <tr>
+                                        <td colspan="4" class="p-3 text-center text-gray-500">
+                                            No approved scrap available
                                     </td>
                                 </tr>
-                                <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
-                                    <td class="p-3 text-gray-800">Copper Wiring</td>
-                                    <td class="p-3 text-gray-800">Electronics</td>
-                                    <td class="p-3 text-gray-800">42.3</td>
-                                    <td class="p-3">
-                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
-                                    </td>
-                                </tr>
-                                <tr class="border-b border-gray-200 hover:bg-gray-100 transition-all">
-                                    <td class="p-3 text-gray-800">Aluminum Sheets</td>
-                                    <td class="p-3 text-gray-800">Manufacturing</td>
-                                    <td class="p-3 text-gray-800">95.7</td>
-                                    <td class="p-3">
-                                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
-                                    </td>
-                                </tr>
+                                {% endif %}
                             </tbody>
                         </table>
                     </div>
@@ -212,57 +444,64 @@
                 
                 <!-- Scrap Processing Form -->
                 <div class="bg-white rounded-lg shadow-md p-6 hover-scale">
-                    <h3 class="orbitron text-xl text-green-700 mb-4 flex items-center">
-                        <span class="mr-2">⚙️</span> PROCESS SCRAP
+                    <h3 class="orbitron text-xl text-green-700 mb-4 flex justify-between items-center">
+                        <div class="flex items-center">
+                            <span class="mr-2">🔄</span> PROCESS SCRAP
+                        </div>
                     </h3>
                     
-                    <form id="scrapForm" method="POST" class="space-y-5">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">STEEL WEIGHT (KG)</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">⚙️</span>
-                                    <input type="number" name="steel" id="steelInput" placeholder="0.00" required
-                                        class="cyber-input w-full px-10 py-3 rounded-lg text-gray-800 focus:outline-none">
-                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">kg</span>
+                    <form method="POST" onsubmit="return validateForm()" class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Steel (kg)</label>
+                                <input type="number" name="steel" step="0.1" min="0" required
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Aluminium (kg)</label>
+                                <input type="number" name="aluminium" step="0.1" min="0" required
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Copper (kg)</label>
+                                <input type="number" name="copper" step="0.1" min="0" required
+                                    class="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
                                 </div>
                             </div>
                             
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">ALUMINIUM WEIGHT (KG)</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">⚙️</span>
-                                    <input type="number" name="aluminium" id="aluminiumInput" placeholder="0.00" required
-                                        class="cyber-input w-full px-10 py-3 rounded-lg text-gray-800 focus:outline-none">
-                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">kg</span>
+                        <div class="bg-blue-50 border-l-4 border-blue-500 p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-info-circle text-blue-500"></i>
                                 </div>
-                            </div>
-                            
-                            <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">COPPER WEIGHT (KG)</label>
-                                <div class="relative">
-                                    <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">⚙️</span>
-                                    <input type="number" name="copper" id="copperInput" placeholder="0.00" required
-                                        class="cyber-input w-full px-10 py-3 rounded-lg text-gray-800 focus:outline-none">
-                                    <span class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500">kg</span>
+                                <div class="ml-3">
+                                    <p class="text-sm text-blue-700">
+                                        This data will be visible to administrators in the admin dashboard. Please ensure accurate measurements.
+                                    </p>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Success Message (initially hidden) -->
-                        <div id="successMessage" class="success-message">
-                            <div class="flex items-center justify-center">
-                                <span class="text-green-700 mr-2">✅</span>
-                                <span>Processing completed! <strong id="processedAmount">0</strong> KG of scrap added to the total.</span>
+                        <div id="successMessage" class="hidden bg-green-50 border-l-4 border-green-500 p-4 mb-4">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-check-circle text-green-500"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm text-green-700">
+                                        <span class="font-bold">Success!</span> Your scrap data has been processed and added to the system.
+                                    </p>
+                                    <p class="text-xs text-green-600 mt-1">
+                                        Total processed: <span id="processedAmount">0</span> kg
+                                    </p>
+                                </div>
                             </div>
                         </div>
                         
-                        <div class="pt-4">
-                            <button type="submit" id="submitButton"
-                                class="w-full py-4 rounded-lg bg-green-600 text-white font-bold orbitron tracking-wider hover:bg-green-700 transition-colors">
-                                <span class="mr-2">✅</span> SUBMIT PROCESSING REQUEST
+                        <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg transition-all duration-300">
+                            Process Scrap
                             </button>
-                        </div>
                     </form>
                 </div>
             </div>
@@ -273,6 +512,16 @@
     <footer class="bg-green-700 text-white shadow-md py-4 px-6 text-center">
         <p class="text-white text-sm">© 2025 Scrap Processor System • All Rights Reserved</p>
     </footer>
+
+    <!-- Popup Message -->
+    <div class="popup-overlay" id="successPopup">
+        <div class="popup-content">
+            <div class="popup-icon">✅</div>
+            <h3 class="popup-title">Scrap Added Successfully!</h3>
+            <p class="popup-message" id="popupMessage">Your scrap data has been processed and added to the system.</p>
+            <button class="popup-button" id="closePopup">OK</button>
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script>
@@ -291,132 +540,37 @@
                 });
             });
             
-            // Get the form and add submit event
-            const form = document.getElementById('scrapForm');
-            const successMessage = document.getElementById('successMessage');
-            const processedAmount = document.getElementById('processedAmount');
-            const totalCounter = document.getElementById('totalCounter');
-            const lastUpdateTime = document.getElementById('lastUpdateTime');
-            const recentActivityList = document.getElementById('recentActivityList');
-            
-            // Initial total (would be passed from the backend in a real app)
-            let totalWeight = parseFloat(totalCounter.innerText) || 0;
-            
+            // Form validation and submission handling
+            const form = document.querySelector('form');
             form.addEventListener('submit', function(e) {
-                e.preventDefault(); // Prevent actual form submission for demo
+                // Get form values
+                const steel = parseFloat(document.querySelector('input[name="steel"]').value);
+                const aluminium = parseFloat(document.querySelector('input[name="aluminium"]').value);
+                const copper = parseFloat(document.querySelector('input[name="copper"]').value);
                 
-                // Get values from inputs
-                const steelWeight = parseFloat(document.getElementById('steelInput').value) || 0;
-                const aluminiumWeight = parseFloat(document.getElementById('aluminiumInput').value) || 0;
-                const copperWeight = parseFloat(document.getElementById('copperInput').value) || 0;
+                // Calculate total weight
+                const totalWeight = steel + aluminium + copper;
                 
-                // Calculate total new weight
-                const newWeight = steelWeight + aluminiumWeight + copperWeight;
+                // Update the processed amount in the success message
+                document.getElementById('processedAmount').textContent = totalWeight.toFixed(1);
                 
-                // Update the total
-                totalWeight += newWeight;
-                totalCounter.innerText = totalWeight.toFixed(1) + ' KG';
+                // Update popup message
+                document.getElementById('popupMessage').innerHTML = 
+                    `You have processed ${totalWeight.toFixed(1)} kg of scrap:<br>
+                    Steel: ${steel.toFixed(1)} kg<br>
+                    Aluminium: ${aluminium.toFixed(1)} kg<br>
+                    Copper: ${copper.toFixed(1)} kg`;
                 
-                // Update the success message
-                processedAmount.innerText = newWeight.toFixed(1);
-                successMessage.style.display = 'block';
+                // Show the popup
+                document.getElementById('successPopup').classList.add('active');
                 
-                // Update last update time
-                const now = new Date();
-                lastUpdateTime.innerText = now.toLocaleTimeString();
-                
-                // Add to recent activity
-                updateRecentActivity(steelWeight, aluminiumWeight, copperWeight);
-                
-                // Add new row to the table
-                addRowToTable(steelWeight, aluminiumWeight, copperWeight);
-                
-                // Reset form
-                form.reset();
-                
-                // Hide success message after 5 seconds
-                setTimeout(() => {
-                    successMessage.style.display = 'none';
-                }, 5000);
+                // Don't prevent form submission - let it continue
             });
             
-            function updateRecentActivity(steel, aluminium, copper) {
-                // Create new activity entries
-                if (steel > 0) {
-                    const steelActivity = document.createElement('div');
-                    steelActivity.className = 'p-3 bg-gray-100 rounded-lg flex justify-between';
-                    steelActivity.innerHTML = `
-                        <span class="text-gray-800">Processed Steel</span>
-                        <span class="font-bold text-green-700">${steel.toFixed(1)} KG</span>
-                    `;
-                    recentActivityList.prepend(steelActivity);
-                }
-                
-                if (aluminium > 0) {
-                    const aluminiumActivity = document.createElement('div');
-                    aluminiumActivity.className = 'p-3 bg-gray-100 rounded-lg flex justify-between';
-                    aluminiumActivity.innerHTML = `
-                        <span class="text-gray-800">Processed Aluminum</span>
-                        <span class="font-bold text-green-700">${aluminium.toFixed(1)} KG</span>
-                    `;
-                    recentActivityList.prepend(aluminiumActivity);
-                }
-                
-                if (copper > 0) {
-                    const copperActivity = document.createElement('div');
-                    copperActivity.className = 'p-3 bg-gray-100 rounded-lg flex justify-between';
-                    copperActivity.innerHTML = `
-                        <span class="text-gray-800">Processed Copper</span>
-                        <span class="font-bold text-green-700">${copper.toFixed(1)} KG</span>
-                    `;
-                    recentActivityList.prepend(copperActivity);
-                }
-                
-                // Limit to last 5 activities
-                const activities = recentActivityList.children;
-                while (activities.length > 5) {
-                    recentActivityList.removeChild(activities[activities.length - 1]);
-                }
-            }
-            
-            function addRowToTable(steel, aluminium, copper) {
-                if (steel + aluminium + copper <= 0) return;
-                
-                const tableBody = document.getElementById('scrapTableBody');
-                const newRow = document.createElement('tr');
-                newRow.className = 'border-b border-gray-200 hover:bg-gray-100 transition-all';
-                
-                // Determine which material has the highest weight for the row name
-                let name, type;
-                if (steel >= aluminium && steel >= copper) {
-                    name = "Steel Components";
-                    type = "Manufacturing";
-                } else if (aluminium >= steel && aluminium >= copper) {
-                    name = "Aluminum Parts";
-                    type = "Industrial";
-                } else {
-                    name = "Copper Materials";
-                    type = "Electronics";
-                }
-                
-                const totalRowWeight = steel + aluminium + copper;
-                
-                newRow.innerHTML = `
-                    <td class="p-3 text-gray-800">${name}</td>
-                    <td class="p-3 text-gray-800">${type}</td>
-                    <td class="p-3 text-gray-800">${totalRowWeight.toFixed(1)}</td>
-                    <td class="p-3">
-                        <span class="px-2 py-1 rounded-full bg-green-100 text-green-700 text-xs">APPROVED</span>
-                    </td>
-                `;
-                
-                // Add to the top of the table
-                if (tableBody.firstChild) {
-                    tableBody.insertBefore(newRow, tableBody.firstChild);
-                } else {
-                    tableBody.appendChild(newRow);
-                }
-            }
+            // Close popup when OK button is clicked
+            document.getElementById('closePopup').addEventListener('click', function() {
+                document.getElementById('successPopup').classList.remove('active');
+            });
             
             // Refresh button functionality
             document.getElementById('refreshButton').addEventListener('click', function() {
@@ -425,6 +579,61 @@
                     this.classList.remove('animate-spin');
                 }, 500);
             });
+            
+            // Check if there's a flash message in the URL
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('success')) {
+                const message = urlParams.get('message') || 'Your scrap data has been processed successfully!';
+                document.getElementById('popupMessage').innerHTML = message;
+                document.getElementById('successPopup').classList.add('active');
+            }
+        });
+    </script>
+
+    <!-- Floating Help Button -->
+    <div class="floating-cta">
+        <div class="floating-btn" id="helpBtn">
+            <i class="fas fa-headset"></i>
+            <span>Need Help?</span>
+        </div>
+        <div class="help-dropdown" id="helpDropdown">
+            <div class="help-option">
+                <i class="fas fa-phone-alt"></i>
+                <span>Call Us</span>
+                <a href="tel:+919390716973" class="help-link"></a>
+            </div>
+            <div class="help-option">
+                <i class="fas fa-envelope"></i>
+                <span>Email Us</span>
+                <a href="mailto:support@metalwasteexchange.com" class="help-link"></a>
+            </div>
+            <div class="help-option">
+                <i class="fas fa-comments"></i>
+                <span>Live Chat</span>
+                <a href="#" class="help-link" id="chatBtn"></a>
+            </div>
+            <div class="help-option">
+                <i class="fas fa-question-circle"></i>
+                <span>FAQs</span>
+                <a href="#" class="help-link" id="faqBtn"></a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Help button functionality
+        const helpBtn = document.getElementById('helpBtn');
+        const helpDropdown = document.getElementById('helpDropdown');
+        
+        helpBtn.addEventListener('click', function() {
+            helpDropdown.classList.toggle('active');
+        });
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            if (!helpBtn.contains(event.target) && !helpDropdown.contains(event.target)) {
+                helpDropdown.classList.remove('active');
+            }
         });
     </script>
 </body>

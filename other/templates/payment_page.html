@@ -55,19 +55,19 @@
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <script>
         // Assuming you have the total amount available in a variable
-        const totalAmount = {{ amount }}; // This should be passed from your backend
+        const totalAmount = {{amount}}; // This should be passed from your backend
         document.getElementById('totalAmount').innerText = (totalAmount / 100).toFixed(2); // Display amount in INR
 
         function openRazorpay(event) {
             event.preventDefault(); // Prevent the default form submission
 
             const options = {
-                key: "rzp_test_h2s4PxBwrmOiSL", // Your Razorpay key
+                key: "rzp_test_maJx76beM9pPzk", // Your Razorpay key
                 amount: totalAmount, // Amount in paise
                 currency: "INR",
                 name: "Metal Waste Management",
                 description: "Scrap Purchase",
-                image: "https://your-logo-url.com/logo.png",
+                image: "https://images.app.goo.gl/fzFddCpYQyaooZ136",
                 handler: function (response) {
                     // Handle successful payment here
                     console.log(response);
@@ -75,9 +75,9 @@
                     document.getElementById('razorpayForm').submit(); // Submit the form to your server
                 },
                 prefill: {
-                    name: "Buyer Name",
+                    name: "Challa Jaipal Reddy",
                     email: "buyer@example.com",
-                    contact: "9999999999"
+                    contact: "9390716973"
                 },
                 theme: {
                     color: "#528FF0"
