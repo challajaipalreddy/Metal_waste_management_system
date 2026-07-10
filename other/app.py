@@ -12,11 +12,11 @@ app.secret_key = "secret"
 # Razorpay API credentials
 razorpay_client = razorpay.Client(auth=("rzp_test_maJx76beM9pPzk", "nMt5oByuD7ebNWlByhnuMudI"))
 
-# Dummy data for authentication
-users = {"user": "user123"}
-admin = {"admin": "admin123"}
-scrap_processors = {"processor": "processor123"}
-buyers = {"buyer": "buyer123"}
+# Authentication credentials - restricted to owner
+users = {"jaipal": "jaipal123"}
+admin = {"jaipal": "jaipal123"}
+scrap_processors = {"jaipal": "jaipal123"}
+buyers = {"jaipal": "jaipal123"}
 
 # Scrap details storage
 scrap_data = []
@@ -54,76 +54,32 @@ def join():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        role = request.form.get('role', 'user')
         
-        if username in users and users[username] == password:
-            session['user'] = username
-            return redirect(url_for('user_dashboard'))
-        elif username in admin and admin[username] == password:
-            session['admin'] = username
-            return redirect(url_for('admin_dashboard'))
-        elif username in scrap_processors and scrap_processors[username] == password:
-            session['processor'] = username
-            return redirect(url_for('processor_dashboard'))
-        elif username in buyers and buyers[username] == password:
-            session['buyer'] = username
-            return redirect(url_for('buyer_dashboard'))
+        if username == 'jaipal' and password == 'jaipal123':
+            if role == 'user':
+                session['user'] = 'Challa Jaipal Reddy'
+                return redirect(url_for('user_dashboard'))
+            elif role == 'admin':
+                session['admin'] = 'Challa Jaipal Reddy'
+                return redirect(url_for('admin_dashboard'))
+            elif role == 'scrap_processor':
+                session['processor'] = 'Challa Jaipal Reddy'
+                return redirect(url_for('processor_dashboard'))
+            elif role == 'buyer':
+                session['buyer'] = 'Challa Jaipal Reddy'
+                return redirect(url_for('buyer_dashboard'))
         else:
-            return "Invalid Credentials! Try again."
+            return render_template("login_alert.html")
+            
     return render_template("login.html")
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        role = request.form['role']
-        
-        # Check if username already exists in any role
-        if (username in users or username in admin or 
-            username in scrap_processors or username in buyers):
-            flash('Username already exists! Please choose a different username.', 'error')
-            return redirect(url_for('register'))
-        
-        # Store user data based on role
-        if role == 'user':
-            users[username] = password
-            # Add to new registrations
-            new_registrations.append({
-                "username": username,
-                "role": "User",
-                "registration_date": datetime.now().strftime("%Y-%m-%d"),
-                "status": "Active"
-            })
-            flash('You have successfully registered as a User! Please login.', 'success')
-            return redirect(url_for('login'))
-        elif role == 'scrap_processor':
-            scrap_processors[username] = password
-            # Add to new registrations
-            new_registrations.append({
-                "username": username,
-                "role": "Processor",
-                "registration_date": datetime.now().strftime("%Y-%m-%d"),
-                "status": "Active"
-            })
-            flash('You have successfully registered as a Scrap Processor! Please login.', 'success')
-            return redirect(url_for('login'))
-        elif role == 'buyer':
-            buyers[username] = password
-            # Add to new registrations
-            new_registrations.append({
-                "username": username,
-                "role": "Buyer",
-                "registration_date": datetime.now().strftime("%Y-%m-%d"),
-                "status": "Active"
-            })
-            flash('You have successfully registered as a Buyer! Please login.', 'success')
-            return redirect(url_for('login'))
-        else:
-            flash('Invalid role selected!', 'error')
-            return redirect(url_for('register'))
-            
+        return render_template("login_alert.html")
     return render_template("login.html")
 
 @app.route('/user_dashboard', methods=['GET', 'POST'])
